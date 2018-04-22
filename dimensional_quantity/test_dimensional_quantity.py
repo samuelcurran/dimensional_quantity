@@ -4,7 +4,7 @@ import pytest
 from hypothesis import given, assume
 import hypothesis.strategies as st
 
-from dimnum import DimensionalQuantity as dq
+from dimensional_quantity import DimensionalQuantity as dq
 
 dqs = st.builds(dq, st.integers(max_value=10000),
                   st.integers(min_value=-5, max_value=5),
