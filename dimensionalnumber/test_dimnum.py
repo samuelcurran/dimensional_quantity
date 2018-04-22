@@ -1,6 +1,11 @@
+import dimnum
+
 from hypothesis.strategies import floats
 from hypothesis import assume, given
 
+
+def test_construction(scalar, units):
+    pass
 
 @given(
     floats(allow_nan=False, allow_infinity=False),

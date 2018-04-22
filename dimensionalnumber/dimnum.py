@@ -8,7 +8,7 @@ from util import seq_equal, zipmap
 Units = namedtuple('Units', ['m', 'kg', 's', 'A', 'K', 'mol', 'cd'])
 
 
-class DimQuan(Number):
+class DimNum(Number):
     def __init__(self, scalar, m=0, kg=0, s=0, A=0, K=0, mol=0, cd=0):
         for unit in (m, kg, s, A, K, mol, cd):
             if isinstance(unit, int):
@@ -17,7 +17,7 @@ class DimQuan(Number):
                 unit = int(unit)
             else:
                 raise ValueError("Must supply interger factors of units.")
-
+                
         self._scalar = float(scalar)
         self._units = Units(m, kg, s, A, K, mol, cd)
 
@@ -35,18 +35,18 @@ class DimQuan(Number):
     #=========================================================================
 
     def __add__(self, other):
-        if isinstance(other, DimQuan):
+        if isinstance(other, DimNum):
             if seq_equal(self._units, other._units):
-                return DimQuan(self._scalar + other._scalar, *self._units)
+                return DimNum(self._scalar + other._scalar, *self._units)
             else:
                 raise ValueError("Cannot add unequal types")
         else:
             raise NotImplementedError
 
     def __sub__(self, other):
-        if isinstance(other, DimQuan):
+        if isinstance(other, DimNum):
             if seq_equal(self._units, other._units):
-                return DimQuan(self._scalar - other._scalar, *self._units)
+                return DimNum(self._scalar - other._scalar, *self._units)
             else:
                 raise ValueError("Cannot add unequal types")
         else:
@@ -54,9 +54,9 @@ class DimQuan(Number):
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
-            return DimQuan(self._scalar * other, *self._units)
-        elif isinstance(other, DimQuan):
-            return DimQuan(self._scalar * other._scalar,
+            return DimNum(self._scalar * other, *self._units)
+        elif isinstance(other, DimNum):
+            return DimNum(self._scalar * other._scalar,
                            *zipmap(add, self._units, other._units))
         else:
             raise NotImplementedError
@@ -66,18 +66,18 @@ class DimQuan(Number):
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
-            return DimQuan(self._scalar / other, *self._units)
-        elif isinstance(other, DimQuan):
-            return DimQuan(self._scalar / other._scalar,
+            return DimNum(self._scalar / other, *self._units)
+        elif isinstance(other, DimNum):
+            return DimNum(self._scalar / other._scalar,
                            *zipmap(sub, self._units, other._units))
         else:
             raise NotImplementedError
 
     def __floordiv__(self, other):
         if isinstance(other, (int, float)):
-            return DimQuan(self._scalar // other, *self._units)
-        elif isinstance(other, DimQuan):
-            return DimQuan(self._scalar // other._scalar,
+            return DimNum(self._scalar // other, *self._units)
+        elif isinstance(other, DimNum):
+            return DimNum(self._scalar // other._scalar,
                            *zipmap(sub, self._units, other._units))
         else:
             raise NotImplementedError
@@ -90,7 +90,7 @@ class DimQuan(Number):
 
     def __pow__(self, other):
         if isinstance(other, (int, float)):
-            return DimQuan(self._scalar**other,
+            return DimNum(self._scalar**other,
                            *zipmap(mul, self._units, repeat(other, 7)))
         else:
             raise NotImplementedError
