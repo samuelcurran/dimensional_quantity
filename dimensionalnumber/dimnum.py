@@ -47,6 +47,16 @@ class DimensionalQuantity(Number):
             for unit, dim in self._units._asdict().items() if dim != 0
         ]))
 
+    def __eq__(self, other):
+        if not isinstance(other, DimensionalQuantity):
+            return False
+        elif self._scalar != other._scalar:
+            return False
+        elif not seq_equal(self._units, other._units):
+            return False
+        else:
+            return True
+
     #=========================================================================
     #          Numeric Methods
     #=========================================================================
