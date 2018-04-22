@@ -1,25 +1,45 @@
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 from itertools import repeat
 from numbers import Number
 from operator import add, floordiv, mul, sub, truediv
 
 from util import seq_equal, zipmap
 
-Units = namedtuple('Units', ['m', 'kg', 's', 'A', 'K', 'mol', 'cd'])
+SI_UNITS = ('m', 'kg', 's', 'A', 'K', 'mol', 'cd')
+Units = namedtuple('Units', SI_UNITS)
 
 
-class DimNum(Number):
-    def __init__(self, scalar, m=0, kg=0, s=0, A=0, K=0, mol=0, cd=0):
-        for unit in (m, kg, s, A, K, mol, cd):
-            if isinstance(unit, int):
-                continue
-            elif float(unit).is_integer():
-                unit = int(unit)
+class DimensionalQuantity(Number):
+    def __init__(self, scalar, m=0, kg=0, s=0, A=0, K=0, mol=0, cd=0,
+                 **kwargs):
+        try:
+            self._scalar = float(scalar)
+        except ValueError:
+            raise ValueError(
+                "Non-numeric type given for dimensional quantity: {0}".format(
+                    scalar))
+
+        units = OrderedDict((('m', m), ('kg', kg), ('s', s), ('A', A),
+                             ('K', K), ('mol', mol), ('cd', cd)))
+        units.update(kwargs)
+
+        for k, v in units.items():
+            if k not in SI_UNITS:
+                raise ValueError("Invalid unit given: {0}".format(k))
+            try:
+                if isinstance(v, int):
+                    continue
+                elif float(v).is_integer():
+                    units[k] = int(v)
+                    continue
+            except ValueError:
+                raise ValueError("Non-numeric factors of {0}: {1}".format(
+                    k, v))
             else:
-                raise ValueError("Must supply interger factors of units.")
-                
-        self._scalar = float(scalar)
-        self._units = Units(m, kg, s, A, K, mol, cd)
+                raise ValueError("Non-integer factors of {0}: {1}".format(
+                    k, v))
+
+        self._units = Units(*units.values())
 
     def __str__(self):
         return "{0} {1}".format(self._scalar, "".join([
@@ -27,26 +47,23 @@ class DimNum(Number):
             for unit, dim in self._units._asdict().items() if dim != 0
         ]))
 
-    def __repr__(self):
-        raise NotImplementedError
-
     #=========================================================================
     #          Numeric Methods
     #=========================================================================
 
     def __add__(self, other):
-        if isinstance(other, DimNum):
+        if isinstance(other, DimensionalQuantity):
             if seq_equal(self._units, other._units):
-                return DimNum(self._scalar + other._scalar, *self._units)
+                return DimensionalQuantity(self._scalar + other._scalar, *self._units)
             else:
                 raise ValueError("Cannot add unequal types")
         else:
             raise NotImplementedError
 
     def __sub__(self, other):
-        if isinstance(other, DimNum):
+        if isinstance(other, DimensionalQuantity):
             if seq_equal(self._units, other._units):
-                return DimNum(self._scalar - other._scalar, *self._units)
+                return DimensionalQuantity(self._scalar - other._scalar, *self._units)
             else:
                 raise ValueError("Cannot add unequal types")
         else:
@@ -54,10 +71,10 @@ class DimNum(Number):
 
     def __mul__(self, other):
         if isinstance(other, (int, float)):
-            return DimNum(self._scalar * other, *self._units)
-        elif isinstance(other, DimNum):
-            return DimNum(self._scalar * other._scalar,
-                           *zipmap(add, self._units, other._units))
+            return DimensionalQuantity(self._scalar * other, *self._units)
+        elif isinstance(other, DimensionalQuantity):
+            return DimensionalQuantity(self._scalar * other._scalar,
+                          *zipmap(add, self._units, other._units))
         else:
             raise NotImplementedError
 
@@ -66,19 +83,19 @@ class DimNum(Number):
 
     def __truediv__(self, other):
         if isinstance(other, (int, float)):
-            return DimNum(self._scalar / other, *self._units)
-        elif isinstance(other, DimNum):
-            return DimNum(self._scalar / other._scalar,
-                           *zipmap(sub, self._units, other._units))
+            return DimensionalQuantity(self._scalar / other, *self._units)
+        elif isinstance(other, DimensionalQuantity):
+            return DimensionalQuantity(self._scalar / other._scalar,
+                          *zipmap(sub, self._units, other._units))
         else:
             raise NotImplementedError
 
     def __floordiv__(self, other):
         if isinstance(other, (int, float)):
-            return DimNum(self._scalar // other, *self._units)
-        elif isinstance(other, DimNum):
-            return DimNum(self._scalar // other._scalar,
-                           *zipmap(sub, self._units, other._units))
+            return DimensionalQuantity(self._scalar // other, *self._units)
+        elif isinstance(other, DimensionalQuantity):
+            return DimensionalQuantity(self._scalar // other._scalar,
+                          *zipmap(sub, self._units, other._units))
         else:
             raise NotImplementedError
 
@@ -90,8 +107,8 @@ class DimNum(Number):
 
     def __pow__(self, other):
         if isinstance(other, (int, float)):
-            return DimNum(self._scalar**other,
-                           *zipmap(mul, self._units, repeat(other, 7)))
+            return DimensionalQuantity(self._scalar**other,
+                          *zipmap(mul, self._units, repeat(other, 7)))
         else:
             raise NotImplementedError
 
