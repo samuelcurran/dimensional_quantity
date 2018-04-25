@@ -6,7 +6,7 @@ import hypothesis.strategies as st
 
 from dimensional_quantity import DimensionalQuantity as dq
 
-dqs = st.builds(dq, st.integers(max_value=10000),
+dqs = st.builds(dq, st.integers(max_value=100000),
                   st.integers(min_value=-5, max_value=5),
                   st.integers(min_value=-5, max_value=5),
                   st.integers(min_value=-5, max_value=5),

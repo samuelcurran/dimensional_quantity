@@ -1,22 +1,17 @@
 import itertools
+from operator import eq
+from typing import Sequence, Iterable, Callable, Any
 
 
-def seq_equal(seq1, seq2) -> bool:
+def seq_equal(s1: Sequence, s2: Sequence) -> bool:
     """
-    Returns True is all elements of two equal-length sequences are equal using the == comaprison.
+    Returns True is all elements of two sequences are equal.
     """
-    if len(seq1) != len(seq2):
-        return False
-    else:
-        for a, b in zip(seq1, seq2):
-            if a != b:
-                return False
-
-        return True
+    return all(itertools.starmap(eq, itertools.zip_longest(s1, s2)))
 
 
-def zipmap(func, *sequences):
+def zipmap(func: Callable[Any], *sequences: Sequence) -> Iterable:
     """
     Zips sequences together and maps a function to them.
     """
-    return itertools.starmap(func, zip(*sequences))
+    return itertools.starmap(func, itertools.zip_longest(*sequences))

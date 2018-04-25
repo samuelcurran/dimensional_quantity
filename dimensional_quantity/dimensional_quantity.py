@@ -6,7 +6,7 @@ from operator import add, floordiv, mul, sub, truediv
 from util import seq_equal, zipmap
 
 SI_UNITS = ('m', 'kg', 's', 'A', 'K', 'mol', 'cd')
-Units = namedtuple('Units', SI_UNITS)
+Units = namedtuple('Units', ('m', 'kg', 's', 'A', 'K', 'mol', 'cd'))
 
 
 class DimensionalQuantity(Number):
@@ -43,7 +43,7 @@ class DimensionalQuantity(Number):
 
     def __str__(self):
         return "{0} {1}".format(self._scalar, "".join([
-            "{0}{1}".format(unit, dim)
+            "{0}:{1} ".format(unit, dim)
             for unit, dim in self._units._asdict().items() if dim != 0
         ]))
 
@@ -236,6 +236,7 @@ class DimensionalQuantity(Number):
     def __neg__(self):
         raise NotImplementedError
 
+
     def __pos__(self):
         raise NotImplementedError
 
@@ -249,7 +250,7 @@ class DimensionalQuantity(Number):
         raise NotImplementedError
 
     def __int__(self):
-        raise NotImplementedError
+        return int(self._scalar)
 
     def __float__(self):
         return self._scalar
